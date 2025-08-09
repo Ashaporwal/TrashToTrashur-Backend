@@ -1,7 +1,7 @@
 
 import express from "express";
 import { body } from "express-validator";
-import {createUser, login, verifyAccount, getAllUser, updateUser,uploadProfilePicture } from "../controller/user.controller.js";
+import {createUser, login, verifyAccount, getAllUser, updateUser,uploadProfilePicture } from "../Controller/user.controller.js";
 import { User } from "../model/user.model.js";
 import multer from "multer";
 const upload = multer({dest:"public/profile"});
