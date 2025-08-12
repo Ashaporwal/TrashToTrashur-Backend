@@ -19,12 +19,14 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static uploads
-app.use("/uploads", express.static("uploads"));
 
-// Routes
+app.use("/uploads", express.static("uploads"));
+app.use('/profile', express.static('public/profile'));
+
+
 app.use("/user", UserRouter);
 app.use("/material", MaterialRouter);
+
 
 mongoose.connect(process.env.DB_URL)
   .then(() => {

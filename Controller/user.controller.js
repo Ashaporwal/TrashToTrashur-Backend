@@ -49,7 +49,7 @@ export const createUser = async (request, response, next) => {
         return response.status(500).json({ error: "Internal Server error" });
 
     }
-}
+};
 
 export const verifyAccount = async (request, response, next) => {
     try {
@@ -145,12 +145,32 @@ export const login = async (request, response, next) => {
         if (!isMatch) {
             return response.status(401).json({ error: "Invalid password" });
         }
-        return response.status(200).json({ message: "Login successful", user });
+        const token = generateToken(user._id, user.email, user.contact);
+           response.cookie("token", token,{
+             
+             httpOnly:true,
+             secure:false,
+             sameSite:"lax"
+         });
+            return response.status(200).json({ message: "Login Successfull" ,user,token});
+
+      
     } catch (err) {
-        console.log(err);
+         console.error("Login error:", err);
         return response.status(500).json({ error: "Internal server error" });
     }
 };
+
+
+export const LogOut = async (request,response,next)=>{
+    try{
+        response.clearCookie("token");
+        return response.status(200).json({message:"LogOut Successfully.."});
+    }
+    catch(err){
+        return response.status(500).json({error:"Internal Server Error..."});
+    }
+}
 
 
 const sendEmail = (email, name) => {
@@ -248,6 +268,15 @@ export const uploadProfilePicture = async (req, res) => {
     }
 };
 
+const generateToken = (userId, email, contact) => {
+    let payload = { userId, email, contact };
+    return jwt.sign(payload, process.env.SECRET);
+};
+
+// const generateToken = (email,contact)=>{
+//     let payload = {email,userId,contact};
+//     return jwt.sign(payload,process.env.TOKEN_SECRET);
+// }
 
 
 // export const authenticateUser = async(request,response,next)=>{
@@ -278,10 +307,7 @@ export const uploadProfilePicture = async (req, res) => {
 
 
 
-// const generateToken = (email,contact)=>{
-//     let payload = {email,userId,contact};
-//     return jwt.sign(payload,process.env.TOKEN_SECRET);
-// }
+
 
 
 // export const logout = async(request,response,next)=>{

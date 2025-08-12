@@ -1,7 +1,7 @@
 
 import express from "express";
 import { body } from "express-validator";
-import {createUser, login, verifyAccount, getAllUser, updateUser,uploadProfilePicture } from "../Controller/user.controller.js";
+import {createUser, login, verifyAccount, getAllUser, updateUser,uploadProfilePicture, LogOut } from "../Controller/user.controller.js";
 import { User } from "../model/user.model.js";
 import multer from "multer";
 const upload = multer({dest:"public/profile"});
@@ -26,8 +26,11 @@ router.post("/verify",verifyAccount);
 // router.patch("/profile/:userId",upload.single("imageName"),createProfile);
 // router.get("/:userId",fetchUser);
 router.get("/getall",getAllUser);
-router.patch("/uploadFile/:userId",upload.single("imageName"),uploadProfilePicture);
+// router.patch("/uploadFile/:userId",upload.single("imageName"),uploadProfilePicture);
+router.patch("/uploadFile/:userId", upload.single("imageName"), uploadProfilePicture);
+
 router.put("/update",updateUser);
+router.delete("/",LogOut);
 export default router;
 
 
