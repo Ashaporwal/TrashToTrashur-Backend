@@ -155,7 +155,10 @@ export const login = async (request, response, next) => {
         //     return response.status(200).json({ message: "Login Successfull" ,user,token});
  const token = generateToken(user._id, user.email, user.contact);
 
-    return response.json({message: "Login successful",token,user});
+    return response.json({message: "Login successful",
+      token,
+      user
+    });
       
     } catch (err) {
          console.error("Login error:", err);
