@@ -145,15 +145,17 @@ export const login = async (request, response, next) => {
         if (!isMatch) {
             return response.status(401).json({ error: "Invalid password" });
         }
-        const token = generateToken(user._id, user.email, user.contact);
-           response.cookie("token", token,{
+        // const token = generateToken(user._id, user.email, user.contact);
+        //    response.cookie("token", token,{
              
-             httpOnly:true,
-             secure:false,
-             sameSite:"lax"
-         });
-            return response.status(200).json({ message: "Login Successfull" ,user,token});
+        //      httpOnly:true,
+        //      secure:false,
+        //      sameSite:"lax"
+        //  });
+        //     return response.status(200).json({ message: "Login Successfull" ,user,token});
+ const token = generateToken(user._id, user.email, user.contact);
 
+    return response.json({message: "Login successful",token,user});
       
     } catch (err) {
          console.error("Login error:", err);
