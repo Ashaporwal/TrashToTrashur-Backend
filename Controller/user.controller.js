@@ -278,6 +278,21 @@ const generateToken = (userId, email, contact) => {
     return jwt.sign(payload, process.env.SECRET);
 };
 
+
+export const getCrafters = async (req, res) => {
+  try {
+    // Fetch users who are crafters
+    const crafters = await User.find({ role: "crafter" }).select("name _id");
+    return res.status(200).json({ crafters });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+
 // const generateToken = (email,contact)=>{
 //     let payload = {email,userId,contact};
 //     return jwt.sign(payload,process.env.TOKEN_SECRET);

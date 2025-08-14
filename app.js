@@ -10,11 +10,17 @@ import UserRouter from "./route/user.route.js";
 dotenv.config();
 const app = express();
 
+// app.use(cors({
+//     // origin: "https://trashtotrashur-frontend.onrender.com", 
+//       // origin: ['http://localhost:5173', 'https://trashtotrashur-frontend.onrender.com'], 
+//       origin:"http://localhost:5173",
+//       // origin:"*",
+//   credentials: true
+// }));
+
 app.use(cors({
-  origin:
-  //  "http://localhost:5173",
-  ["http://localhost:5173",
-  "https://trashtotrashur-frontend.onrender.com"],
+  origin: ["http://localhost:5173","https://trashtotrashur-frontend.onrender.com"],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
 
