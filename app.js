@@ -17,8 +17,7 @@ const app = express();
 // ===== Middleware =====
 app.use(
   cors({
-    // origin: "http://localhost:5173",
-      origin: "https://trashtotrashur-frontend.onrender.com",
+    origin: ["http://localhost:5173", "https://trashtotrashur-frontend.onrender.com"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
