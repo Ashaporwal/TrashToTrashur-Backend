@@ -28,9 +28,20 @@ const materialSchema = new mongoose.Schema({
         enum: ["pending", "approved", "rejected"],
         default: "pending"
     },
+    price: {
+  type: Number,
+  required: true,
+  default: 0
+},
+quantity: {
+  type: Number,
+  required: true,
+  default: 1
+},
     submittedBy: {
-        type: String, // Agar tum ObjectId use karoge to "type: mongoose.Schema.Types.ObjectId"
-        required: true
+         type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref:"User"
     }
 }, { timestamps: true });
 

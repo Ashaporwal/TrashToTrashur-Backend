@@ -30,6 +30,8 @@ router.get("/getall",getAllUser);
 router.patch("/uploadFile/:userId", upload.single("imageName"), uploadProfilePicture);
 
 router.put("/update",updateUser);
+
+
 router.delete("/",LogOut);
 export default router;
 

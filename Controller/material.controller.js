@@ -68,49 +68,30 @@ import { Material } from "../model/material.model.js";
 
 
 
-
 export const createMaterial = async (req, res) => {
-    try {
-        console.log("REQ BODY:", req.body);
-        console.log("REQ FILE:", req.file);
-
-        const { title, description, category, tags, status, submittedBy } = req.body;
-
-        if (!title || !description || !category || !status || !submittedBy) {
-            return res.status(400).json({ error: "All fields are required" });
-        }
-
-        let imagePathArray = [];
-        if (req.file) {
-            imagePathArray.push(`/uploads/${req.file.filename}`);
-        }
-
-        const material = await Material.create({
-            title,
-            description,
-            category,
-            images: imagePathArray,
-            tags: tags ? tags.split(",").map(t => t.trim()) : [],
-            status,
-            submittedBy
-        });
-
-        return res.status(201).json({ message: "Material Submitted Successfully", material });
-    } catch (err) {
-        console.error("Error in createMaterial:", err);
-        return res.status(500).json({ error: err.message });
-    }
+  try {
+    const newMaterial = new Material({
+      ...req.body,
+      images: req.file ? [`/uploads/${req.file.filename}`] : []
+    });
+    await newMaterial.save();
+    res.status(201).json({ message: "Material added", material: newMaterial });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
-export const getallMaterial = async (req, res) => {
-    try {
-        const allmaterial = await Material.find();
-        return res.status(200).json({ message: "All material fetched successfully", allmaterial });
-    } catch (err) {
-        return res.status(500).json({ error: "Internal server error" });
-    }
+export const getAllMaterials = async (req, res) => {
+  try {
+    const allmaterial = await Material.find()
+      .populate("submittedBy", "name");
+    res.json({ allmaterial });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
-
 export const getMaterialById = async (req, res) => {
     try {
         const material = await Material.findById(req.params.id);

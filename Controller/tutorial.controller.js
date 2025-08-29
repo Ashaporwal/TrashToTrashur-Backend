@@ -1,61 +1,55 @@
-import { validationResult } from "express-validator";
-import express, { request, response } from "express";
-import nodemailer from "nodemailer";
-import multer from "multer";
+
 import { Tutorial } from "../model/tutorial.model.js";
 
-
-// export const createTutorial = async (req, res) => {
-//   try {
-//     const tutorial = new Tutorial(req.body);
-//     await tutorial.save();
-//     res.status(201).json({ message: "Tutorial created", tutorial });
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// }
-
-// export const createTutorial = async (req, res) => {
-//   try {
-
-
-//  const { title, description, videoUrl, steps, material } = req.body;
-//  let parsedSteps = [];
-// let parsedMaterials = [];
-
-
-//    parsedSteps = typeof steps === "string" ? JSON.parse(steps) : steps;
-//   parsedMaterials = typeof material === "string" ? JSON.parse(material) : material;
-
-//     // // Save to DB here (mock response below)
-//     // console.log("Tutorial Created:", tutorial);
-//     // res.status(201).json({ message: "Tutorial created successfully" });
-//   } catch (err) {
-//     console.error("Error in createTutorial:", err);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
+let tutorials = []; // temporary storage, database ke jagah
 
 
 export const createTutorial = async (req, res) => {
   try {
-    const { title, description } = req.body;
-
-    const images = req.files?.images?.map(file => `/uploads/${file.filename}`) || [];
-    const videoPath = req.files?.video?.[0] ? `/uploads/${req.files.video[0].filename}` : null;
+    const images = req.files.images ? req.files.images.map(f => ({ filename: f.filename, originalname: f.originalname })) : [];
+    const video = req.files.video ? { filename: req.files.video[0].filename, originalname: req.files.video[0].originalname } : null;
 
     const tutorial = new Tutorial({
-      title,
-      description,
-      videoUrl: videoPath, // ✅ spelling sahi
-      images
+      title: req.body.title,
+      description: req.body.description,
+      images,
+      video,
+      uploadedBy: req.body.uploadedBy  // ye ObjectId chahiye
     });
 
     await tutorial.save();
-    res.status(201).json({ message: "Tutorial created successfully", tutorial });
-  } catch (error) {
-    console.error("Error inside createTutorial:", error);
-    res.status(500).json({ message: "Internal Server Error", error: error.message });
+    res.status(201).json({ message: "Tutorial created", tutorial });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+};
+
+// Get all tutorials
+export const getAllTutorials = async (req, res) => {
+  try {
+    const tutorials = await Tutorial.find().sort({ createdAt: -1 });
+    res.status(200).json(tutorials);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch tutorials", error: err.message });
+  }
+};
+
+export const getTutorialById = async (req, res) => {
+  try {
+    const tutorial = await Tutorial.findById(req.params.id);
+    res.json(tutorial);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteTutorial = async (req, res) => {
+  try {
+    await Tutorial.findByIdAndDelete(req.params.id);
+    res.json({ message: "Tutorial deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -66,70 +60,171 @@ export const createTutorial = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import { validationResult } from "express-validator";
+// import express, { request, response } from "express";
+// import nodemailer from "nodemailer";
+// import multer from "multer";
+// import { Tutorial } from "../model/tutorial.model.js";
+
+
+// // export const createTutorial = async (req, res) => {
+// //   try {
+// //     const tutorial = new Tutorial(req.body);
+// //     await tutorial.save();
+// //     res.status(201).json({ message: "Tutorial created", tutorial });
+// //   } catch (error) {
+// //     res.status(400).json({ error: error.message });
+// //   }
+// // }
+
+// // export const createTutorial = async (req, res) => {
+// //   try {
+
+
+// //  const { title, description, videoUrl, steps, material } = req.body;
+// //  let parsedSteps = [];
+// // let parsedMaterials = [];
+
+
+// //    parsedSteps = typeof steps === "string" ? JSON.parse(steps) : steps;
+// //   parsedMaterials = typeof material === "string" ? JSON.parse(material) : material;
+
+// //     // // Save to DB here (mock response below)
+// //     // console.log("Tutorial Created:", tutorial);
+// //     // res.status(201).json({ message: "Tutorial created successfully" });
+// //   } catch (err) {
+// //     console.error("Error in createTutorial:", err);
+// //     res.status(500).json({ message: "Internal Server Error" });
+// //   }
+// // };
+
+
+// // controllers/tutorial.controller.js
+// // import { Tutorial } from "../models/Tutorial.js";
 // export const createTutorial = async (req, res) => {
 //   try {
-//     const { title, description, videoUrl } = req.body;
-//     const steps = JSON.parse(req.body.steps);
-//     const material = JSON.parse(req.body.material);
+//     console.log("req.body:", req.body);
+//     console.log("req.files:", req.files);
 
-//     const images = req.files.map(file => ({
-//       filename: file.originalname,
-//       mimetype: file.mimetype,
-//       buffer: file.buffer
-//     }));
+//     // Video URL: local file OR external URL
+//     let videoUrl = req.body.videoUrl || (req.files.video ? req.files.video[0].path : null);
+
+//     // Images: uploaded files OR external URLs
+//     let imagesArray = [];
+//     if (req.body.imageUrls) {
+//       imagesArray = req.body.imageUrls.split(",").map(url => ({ path: url }));
+//     }
+//     if (req.files.images) {
+//       imagesArray.push(...req.files.images.map(img => ({
+//         filename: img.filename,
+//         mimetype: img.mimetype,
+//         path: img.path
+//       })));
+//     }
 
 //     const tutorial = new Tutorial({
-//       title,
-//       description,
+//       title: req.body.title,
+//       description: req.body.description,
+//       category: req.body.category,
+//       tags: req.body.tags ? req.body.tags.split(",") : [],
 //       videoUrl,
-//       steps,
-//       material,
-//       images, // Make sure your model supports this
+//       images: imagesArray,
+//       createdBy: req.body.submittedBy
 //     });
 
 //     await tutorial.save();
-//     res.status(201).json({ message: "Tutorial created", tutorial });
-//     console.log("BODY:", req.body);
-// console.log("FILES:", req.files);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
+//     res.status(201).json(tutorial);
+//   } catch (err) {
+//     console.error("Error saving tutorial:", err);
+//     res.status(500).json({ error: "Failed to create tutorial" });
 //   }
 // };
 
 
-export const getallTutorial = async (req, res) => {
-  try {
-    const tutorials = await Tutorial.find().populate("createdBy","name email");
-    res.status(200).json({ message: "All Tutorials find Successfully", tutorials });
 
-  }
-  catch (err) {
-    res.status(400).json({ err: err.message });
-  }
-}
 
-export const getTutorialById = async (req, res) => {
-  try {
-    const tutorialByid = await Tutorial.findById( req.params.id);
-    if(!tutorialByid){
-      return res.status(404).json({message:"Tutorial not found"});
-    }
-    res.status(200).json({ message: "Tutorial fetched successfully", tutorialByid });
-  } catch (err) {
-    res.status(400).json({ err: err.message });
-  }
-}
 
-export const deleteTutorial = async (req,res) =>{
-  try{
-    const deleted = await Tutorial.findByIdAndDelete(req.params.id);
-    if(!deleted){
-      return res.status(404).json({message:"Tutorial not found to delete"});
 
-    }
-    res.status(200).json({message:"Tutorial successfully deleted",deleted});
-  }catch(err){
-    res.status(400).json({message:"err: err.message"});
-  }
-}
+
+
+// // export const createTutorial = async (req, res) => {
+// //   try {
+// //     const { title, description, videoUrl } = req.body;
+// //     const steps = JSON.parse(req.body.steps);
+// //     const material = JSON.parse(req.body.material);
+
+// //     const images = req.files.map(file => ({
+// //       filename: file.originalname,
+// //       mimetype: file.mimetype,
+// //       buffer: file.buffer
+// //     }));
+
+// //     const tutorial = new Tutorial({
+// //       title,
+// //       description,
+// //       videoUrl,
+// //       steps,
+// //       material,
+// //       images, // Make sure your model supports this
+// //     });
+
+// //     await tutorial.save();
+// //     res.status(201).json({ message: "Tutorial created", tutorial });
+// //     console.log("BODY:", req.body);
+// // console.log("FILES:", req.files);
+// //   } catch (error) {
+// //     res.status(400).json({ error: error.message });
+// //   }
+// // };
+
+
+// export const getallTutorial = async (req, res) => {
+//   try {
+//     const tutorials = await Tutorial.find().populate("createdBy","name email");
+//     res.status(200).json({ message: "All Tutorials find Successfully", tutorials });
+
+//   }
+//   catch (err) {
+//     res.status(400).json({ err: err.message });
+//   }
+// }
+
+// export const getTutorialById = async (req, res) => {
+//   try {
+//     const tutorialByid = await Tutorial.findById( req.params.id);
+//     if(!tutorialByid){
+//       return res.status(404).json({message:"Tutorial not found"});
+//     }
+//     res.status(200).json({ message: "Tutorial fetched successfully", tutorialByid });
+//   } catch (err) {
+//     res.status(400).json({ err: err.message });
+//   }
+// }
+
+// export const deleteTutorial = async (req,res) =>{
+//   try{
+//     const deleted = await Tutorial.findByIdAndDelete(req.params.id);
+//     if(!deleted){
+//       return res.status(404).json({message:"Tutorial not found to delete"});
+
+//     }
+//     res.status(200).json({message:"Tutorial successfully deleted",deleted});
+//   }catch(err){
+//     res.status(400).json({message:"err: err.message"});
+//   }
+// }
 

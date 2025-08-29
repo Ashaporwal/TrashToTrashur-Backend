@@ -1,5 +1,5 @@
 import mongoose, { get, version } from "mongoose";
-import { User } from "../model/user.model.js";
+
 
 const productSchema = new mongoose.Schema({
     title:{
@@ -20,23 +20,22 @@ const productSchema = new mongoose.Schema({
         required:true
     },
     images:{
-        type:[String],
-        default:[]
+        type:[String],   // <-- change here
+        default: []
     },
     createdBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
-       required:true
+        // required:true
     },
     stock:{
         type:Number,
-        required:true
+        default:0
     },
     isAvailable:{
         type:Boolean,
         default:true,
-        required:true,
-
+        required:true
     }
 });
 
