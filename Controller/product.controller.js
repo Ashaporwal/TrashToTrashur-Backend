@@ -1,49 +1,112 @@
 // controllers/product.controller.js
 import mongoose from 'mongoose';
 import { Product } from '../model/product.model.js';
+import cloudinary from '../config/cloudinary.js';
+
+// export const createProduct = async (request, response,next) => {
+//   try {
+//     const { title, description, price, category, stock } = request.body;
+
+//     let images = [];
+// if(request.files && request.files.length > 0){
+//       for(const file of request.files){
+//         const result = await cloudinary.uploader.upload(file.path,{
+//           folder:"products",
+//         });
+//         images.push(result.secure_url);
+//       }
+//     }
+
+
+//   let creator = request.body.createdBy ? request.body.createdBy.replace(/^"+|"+$/g, "") : null;
+
+//       // Validate ObjectId
+//       if (creator && !mongoose.Types.ObjectId.isValid(creator)) {
+//         creator = null;
+//       }
+    
+
+//     const product = await Product.create({
+//       title,
+//       description,
+//       price,
+//       category,
+//       stock,
+//       images,
+//       createdBy,
+//       isAvailable: true
+//     });
+
+//     res.status(201).json({ success: true, product });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Server error", details: err.message });
+//   }
+// };
 
 export const createProduct = async (req, res) => {
   try {
     const { title, description, price, category, stock } = req.body;
 
-    // Handle uploaded images (Multer)
-    const images = req.files ? req.files.map(file => file.filename) : [];
-
-    // Handle createdBy field
-    let createdBy = req.body.createdBy || null;
-    if (createdBy) {
-      // Remove extra quotes if present
-      createdBy = createdBy.replace(/^"+|"+$/g, '');
-      // Validate ObjectId
-      if (!mongoose.Types.ObjectId.isValid(createdBy)) {
-        createdBy = null;
+    // Agar multiple files upload ho rahi hain
+    const images = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        // Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: "products",
+        });
+        images.push(result.secure_url);
       }
     }
 
-    const product = await Product.create({
+    const product = new Product({
       title,
       description,
       price,
       category,
+      images,   // multiple images
       stock,
-      images,
-      createdBy,
-      isAvailable: true
+      isAvailable: true,
     });
 
-    res.status(201).json({ success: true, product });
+    await product.save();
+    res.status(201).json({ message: "Product created successfully", product });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server error", details: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
-export const getAllProduct = async (req, res) => {
+// export const createProduct = async (req, res) => {
+//   try {
+//     const { title, description, price, category, stock } = req.body;
+//     const image = req.file ? req.file.path : null; // Cloudinary URL comes here
+
+//     const product = new Product({
+//       title,
+//       description,
+//       price,
+//       category,
+//       images: [image],
+//       stock,
+//       isAvailable: true
+//     });
+
+//     await product.save();
+//     res.status(201).json(product);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+
+export const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
-    res.status(200).json({ success: true, products });
+    res.status(200).json(products);
   } catch (err) {
-    res.status(500).json({ error: "Error fetching products", details: err.message });
+    res.status(500).json({ message: "Error fetching products" });
   }
 };
 
@@ -59,31 +122,42 @@ export const getProductById = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
-    const { title, description, price, category, stock } = req.body;
+    const { title, description, price, category, stock, createdBy } = req.body;
 
+    // Basic product fields
     let updateData = { title, description, price, category, stock };
 
+    // Agar nayi images upload hui hain toh unke URLs le lo
     if (req.files && req.files.length > 0) {
-      updateData.images = req.files.map(file => file.filename);
+      let images = [];
+      for (const file of req.files) {
+        const result = await cloudinary.uploader.upload(file.path, { folder: "products" });
+        images.push(result.secure_url);
+      }
+      updateData.images = images;
     }
 
-    // Handle createdBy if updating
-    if (req.body.createdBy) {
-      let createdBy = req.body.createdBy.replace(/^"+|"+$/g, '');
-      if (mongoose.Types.ObjectId.isValid(createdBy)) {
-        updateData.createdBy = createdBy;
+    // createdBy agar update ho raha hai
+    if (createdBy) {
+      let creator = createdBy.replace(/^"+|"+$/g, '');
+      if (mongoose.Types.ObjectId.isValid(creator)) {
+        updateData.createdBy = creator;
       }
     }
 
+    // Product update karo
     const product = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
 
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-    res.status(200).json({ success: true, product });
+    return res.status(200).json({ success: true, product });
   } catch (err) {
-    res.status(500).json({ error: "Error updating product", details: err.message });
+    return res.status(500).json({ error: "Error updating product", details: err.message });
   }
 };
+
 
 export const deleteProduct = async (req, res) => {
   try {

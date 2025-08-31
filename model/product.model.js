@@ -2,6 +2,10 @@ import mongoose, { get, version } from "mongoose";
 
 
 const productSchema = new mongoose.Schema({
+    name:{
+      type:String,
+      required:true
+    },
     title:{
         type:String,
         required:true,
@@ -23,7 +27,7 @@ const productSchema = new mongoose.Schema({
         type:[String],   // <-- change here
         default: []
     },
-    createdBy:{
+    creator:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         // required:true
