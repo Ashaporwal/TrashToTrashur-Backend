@@ -4,11 +4,11 @@ import mongoose, { get, version } from "mongoose";
 const productSchema = new mongoose.Schema({
     name:{
       type:String,
-      required:true
+    //   required:true
     },
     title:{
         type:String,
-        required:true,
+        // required:true,
         trim:true
     },
     description:{

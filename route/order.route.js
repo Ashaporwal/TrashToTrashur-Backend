@@ -1,13 +1,14 @@
 import express from "express";
 import { body } from "express-validator";
-import { createOrder,getAllOrders,getOrderByUser,updateOrderStatus ,deletedOrder} from "../Controller/order.controller.js";
+import { createOrder,updateOrderStatus , getOrderByCrafter} from "../Controller/order.controller.js";
 
 const router = express.Router();
 
 router.post("/",createOrder);
-router.get('/',getAllOrders);
-router.get('/',getOrderByUser);
+// router.get('/getall',getAllOrders);
+// router.get('/',getOrderByUser);
+router.get('/getbycrafter/:crafterId', getOrderByCrafter);
 router.put('/',updateOrderStatus);
-router.delete('/',deletedOrder);
+// router.delete('/',deletedOrder);
 
 export default router;

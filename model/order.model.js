@@ -1,41 +1,84 @@
-import mongoose, { Schema } from "mongoose";
-import { Product } from "../model/product.model.js";
-import { User } from "../model/user.model.js";
+import mongoose from "mongoose";
 
-
-const  orderSchema = new mongoose.Schema({
-  product:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'product',
-    required:true
+const orderSchema = new mongoose.Schema({
+  material: {  
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Material',
+    required: true
   },
-  buyer:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'user',
-    required:true
+  buyer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-   images: {  
-        type: String,
-        default: "",
-    },
-  quantity:{
-    type:Number,
-    required:true,
-    min:1,
+  seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-  totalPrice:{
-    type:Number,
-    required:true
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1
   },
-  status:{
-    type:String,
-    enum:["pending","conform","delivered","cancelled"],
-    default:"pending"
+  totalPrice: {
+    type: Number,
+    required: true
   },
-  createdAt:{
-    type:Date,
-    default :Date.now
+  status: {
+    type: String,
+    enum: ["pending", "confirmed", "delivered", "cancelled"],
+    default: "pending"
+  },
+  images: {
+    type: [String],
+    default: []
+  },
+  address: {
+    type: String,
+    required: true
   }
-});
+}, { timestamps: true });
 
-export const Order = mongoose.model("order",orderSchema);
+export const Order = mongoose.model("Order", orderSchema);
+
+
+// import mongoose from "mongoose";
+
+// const orderSchema = new mongoose.Schema({
+//   material: {  
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'Material',
+//     required: true
+//   },
+//   buyer: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true
+//   },
+//   seller: {
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: 'User',
+//     required: true
+//   },
+//   quantity: {
+//     type: Number,
+//     required: true,
+//     min: 1
+//   },
+//   totalPrice: {
+//     type: Number,
+//     required: true
+//   },
+//   status: {
+//     type: String,
+//     enum: ["pending", "confirmed", "delivered", "cancelled"],
+//     default: "pending"
+//   },
+//   images: {
+//     type: [String],
+//     default: []
+//   }
+// }, { timestamps: true });
+
+// export const Order = mongoose.model("Order", orderSchema);

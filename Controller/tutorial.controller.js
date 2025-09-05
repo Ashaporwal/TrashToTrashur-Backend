@@ -1,7 +1,7 @@
 
 import { Tutorial } from "../model/tutorial.model.js";
 
-let tutorials = []; // temporary storage, database ke jagah
+let tutorials = []; 
 
 
 export const createTutorial = async (req, res) => {
@@ -14,7 +14,7 @@ export const createTutorial = async (req, res) => {
       description: req.body.description,
       images,
       video,
-      uploadedBy: req.body.uploadedBy  // ye ObjectId chahiye
+      uploadedBy: req.body.uploadedBy 
     });
 
     await tutorial.save();
@@ -25,15 +25,46 @@ export const createTutorial = async (req, res) => {
   }
 };
 
-// Get all tutorials
 export const getAllTutorials = async (req, res) => {
   try {
-    const tutorials = await Tutorial.find().sort({ createdAt: -1 });
+    const tutorials = await Tutorial.find().populate("uploadedBy", "name");
     res.status(200).json(tutorials);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch tutorials", error: err.message });
+    res.status(500).json({ message: "Failed to fetch tutorials", error: err });
   }
 };
+
+
+
+export const updateTutorial = async (req, res) => {
+  try {
+    const tutorialId = req.params.id;
+    const tutorial = await Tutorial.findById(tutorialId);
+    if (!tutorial) return res.status(404).json({ message: "Tutorial not found" });
+
+    // Update fields
+    tutorial.title = req.body.title || tutorial.title;
+    tutorial.description = req.body.description || tutorial.description;
+
+    if (req.files.video) {
+      tutorial.video = { filename: req.files.video[0].filename, originalname: req.files.video[0].originalname };
+    }
+
+    if (req.files.images) {
+      tutorial.images = req.files.images.map(f => ({ filename: f.filename, originalname: f.originalname }));
+    }
+
+    await tutorial.save();
+    res.json({ message: "Tutorial updated", tutorial });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Update failed", error: err });
+  }
+};
+
+
+
+
 
 export const getTutorialById = async (req, res) => {
   try {
@@ -54,7 +85,16 @@ export const deleteTutorial = async (req, res) => {
 };
 
 
-
+export const getMyTutorials = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const tutorials = await Tutorial.find({ uploadedBy: userId });
+    res.status(200).json({ success: true, tutorials });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
 
 
 

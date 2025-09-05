@@ -4,41 +4,59 @@ import nodemailer from "nodemailer";
 import { Comment } from "../model/comment.model.js";
 
 
-export const createComment = async(request,response,next)=>{
-    try{
-   const {user,targetId,type,text} = request.body;
-if(!user || !targetId || !type || !text){
-    return response.status(400).json({error:"All fields are required"});
-}
+export const createComment = async (req, res, next) => {
+  try {
+    const { user, targetId, type, text } = req.body;
 
-
-   const result = await Comment.create(user,targetId,type,text);
-     return response.status(201).json({message:"Comment added successfully"});
-   
-    }catch(err){
-        console.log(err);
-        return response.status(500).json({err:"Internal server error"});
+    if (!user || !targetId || !type || !text) {
+      return res.status(400).json({ error: "All fields are required" });
     }
-}
 
+    const result = await Comment.create({ user, targetId, type, text });
 
-
-export const getAllComments = async(request,response,next)=>{
-try{
-   let {targetId} = request.params;
-   let {type} = request.query;
-
-   if(!targetId && !type){
-    return response.status(400).json({error:"All fields are required"});
-   }
-   const result = await Comment.find({targetId,type});
-   return response.status(200).json({message:"All Comments Found successfully",data:result});
-}catch(err)
-{
+    return res.status(201).json({
+      message: "Comment added successfully",
+      comment: result
+    });
+  } catch (err) {
     console.log(err);
-    return response.status(500).json({err:"Internal server error"});
-}
-}
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const getAllComments = async (req, res) => {
+  try {
+    const { targetId, type } = req.query;
+    if (!targetId || !type)
+      return res.status(400).json({ error: "targetId and type required" });
+
+    // Populate user field to get name
+    const comments = await Comment.find({ targetId, type })
+      .populate({ path: "user", select: "name" })  // <- populate user name
+      .sort({ createdAt: -1 });  // Optional: latest comments first
+
+    return res.status(200).json({ comments });  // <- frontend me res.data.comments use karo
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
+// export const getAllComments = async (req, res) => {
+//   try {
+//     const { targetId, type } = req.query;
+//     if (!targetId || !type)
+//       return res.status(400).json({ error: "targetId and type required" });
+
+//     const comments = await Comment.find({ targetId, type }).populate("user", "name");
+//     return res.status(200).json({ comments });
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).json({ error: "Internal server error" });
+//   }
+// };
 
 export const deleteComments= async(request,response,next)=>{
       try{

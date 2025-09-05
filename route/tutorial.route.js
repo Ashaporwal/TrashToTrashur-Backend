@@ -1,10 +1,9 @@
 import express from "express";
 import multer from "multer";
-import { createTutorial, getAllTutorials, getTutorialById, deleteTutorial } from '../Controller/tutorial.controller.js';
+import { createTutorial, getAllTutorials, getTutorialById, deleteTutorial,getMyTutorials,updateTutorial } from '../Controller/tutorial.controller.js';
 
 const router = express.Router();
 
-// Multer config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
@@ -13,8 +12,11 @@ const upload = multer({ storage });
 
 // Routes
 router.post("/create", upload.fields([{ name: "video", maxCount: 1 }, { name: "images", maxCount: 5 }]), createTutorial);
+// router.put("/:id",updateTutorial );
+router.put("/:id", upload.fields([{ name: "video", maxCount: 1 }, { name: "images", maxCount: 5 }]), updateTutorial);
 router.get("/all", getAllTutorials);
 router.get("/getbyid/:id", getTutorialById);
+router.get("/mytutorials/:userId", getMyTutorials);
 router.delete("/:id", deleteTutorial);
 
 export default router;

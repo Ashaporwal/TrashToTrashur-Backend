@@ -1,16 +1,29 @@
-
 import express from "express";
 import { body } from "express-validator";
-import {createUser, login, verifyAccount, getAllUser, updateUser,uploadProfilePicture, LogOut } from "../Controller/user.controller.js";
-import { User } from "../model/user.model.js";
+import {
+  createUser,
+  login,
+  verifyAccount,
+  getAllUser,
+  updateUser,
+  LogOut,
+  getById
+} from "../Controller/user.controller.js";
 import multer from "multer";
-const upload = multer({dest:"public/profile"});
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "public/profile"), // folder must exist
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
+});
+
+const upload = multer({ storage });
 
 const router = express.Router();
 
-router.post("/signup",
+// Signup
+router.post(
+  "/signup",
   body("name", "Name is required").notEmpty(),
-  // body("name", "Only alphabets are allowed").isAlpha(),
   body("name", "Only alphabets are allowed").matches(/^[A-Za-z\s]+$/),
   body("email", "Valid email is required").isEmail(),
   body("password", "Password is required").notEmpty(),
@@ -20,20 +33,22 @@ router.post("/signup",
   createUser
 );
 
+// Login & verify
+router.post("/login", login);
+router.post("/verify", verifyAccount);
 
-router.post("/login",login);
-router.post("/verify",verifyAccount);
-// router.patch("/profile/:userId",upload.single("imageName"),createProfile);
-// router.get("/:userId",fetchUser);
-router.get("/getall",getAllUser);
-// router.patch("/uploadFile/:userId",upload.single("imageName"),uploadProfilePicture);
-router.patch("/uploadFile/:userId", upload.single("imageName"), uploadProfilePicture);
+// Get users
+router.get("/getall", getAllUser);
+router.get("/:id", getById);
 
-router.put("/update",updateUser);
+// Update user profile with optional profile picture
+router.put("/update/:id", upload.single("profilePicture"), updateUser);
 
+// Logout
+router.delete("/", LogOut);
 
-router.delete("/",LogOut);
 export default router;
+
 
 
 

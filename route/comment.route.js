@@ -3,10 +3,10 @@ import { createComment,getAllComments,deleteComments,upadteComment} from "../Con
 
 const router = express.Router();
 
-router.post('/comments',createComment)
-router.get('/comments',getAllComments);
-router.delete('/comments',deleteComments);
-router.put("/comments",upadteComment);
+router.post('/create',createComment)
+router.get('/getall',getAllComments);
+router.delete('/delete',deleteComments);
+router.put("/update",upadteComment);
 
 
 export default router;

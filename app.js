@@ -9,12 +9,14 @@ import path from "path";
 import MaterialRouter from "./route/material.route.js";
 import UserRouter from "./route/user.route.js";
 import ProductRouter from "./route/product.route.js";
-import TutorialRouter from "./route/tutorial.route.js"; // ← add this
+import TutorialRouter from "./route/tutorial.route.js"; 
 import galleryRoutes from "./route/gallery.route.js";
+import commentRouter from "./route/comment.route.js";
+import OrderRouter from "./route/order.route.js";
 dotenv.config();
 const app = express();
 
-// ===== Middleware =====
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://trashtotrashur-frontend.onrender.com"],
@@ -27,21 +29,22 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ===== Static folder for uploaded files =====
-//app.use("/uploads", express.static(path.join(path.resolve(), "uploads")));
-// app.use(express.static("uploads"))
+
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
+app.use("/profile", express.static(path.join(path.resolve(), "public/profile")));
 
-// ===== Routes =====
+
 app.use("/user", UserRouter);
 app.use("/material", MaterialRouter);
 app.use("/product", ProductRouter);
-app.use("/tutorial", TutorialRouter); // ← add this
+app.use("/tutorial", TutorialRouter); 
 app.use("/gallery", galleryRoutes);
+// app.use('/comment',CommentRouter);
+app.use("/comment", commentRouter);
+app.use("/order",OrderRouter);
 
-// ===== Connect to MongoDB & start server =====
 mongoose
   .connect(process.env.DB_URL)
   .then(() => {
