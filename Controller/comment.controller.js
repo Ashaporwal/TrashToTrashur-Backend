@@ -29,11 +29,14 @@ export const getAllComments = async (req, res) => {
     const { targetId, type } = req.query;
     if (!targetId || !type)
       return res.status(400).json({ error: "targetId and type required" });
+const comments = await Comment.find({ targetId, type })
+  .populate("user", "name") // ab user ka name aa jayega
+  .sort({ createdAt: -1 });
 
     // Populate user field to get name
-    const comments = await Comment.find({ targetId, type })
-      .populate({ path: "user", select: "name" })  // <- populate user name
-      .sort({ createdAt: -1 });  // Optional: latest comments first
+    // const comments = await Comment.find({ targetId, type })
+    //   .populate({ path: "user", select: "name" })  // <- populate user name
+    //   .sort({ createdAt: -1 });  // Optional: latest comments first
 
     return res.status(200).json({ comments });  // <- frontend me res.data.comments use karo
   } catch (err) {

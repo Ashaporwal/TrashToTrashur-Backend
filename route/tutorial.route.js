@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { createTutorial, getAllTutorials, getTutorialById, deleteTutorial,getMyTutorials,updateTutorial } from '../Controller/tutorial.controller.js';
+import { createTutorial, getAllTutorials, getTutorialById, deleteTutorial,getMyTutorials,updateTutorial,likeTutorial } from '../Controller/tutorial.controller.js';
 
 const router = express.Router();
 
@@ -18,6 +18,9 @@ router.get("/all", getAllTutorials);
 router.get("/getbyid/:id", getTutorialById);
 router.get("/mytutorials/:userId", getMyTutorials);
 router.delete("/:id", deleteTutorial);
+// router.post("/:id/like",likeTutorial);
+router.post("/:id/like", likeTutorial);
+
 
 export default router;
 

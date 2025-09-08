@@ -13,6 +13,7 @@ import TutorialRouter from "./route/tutorial.route.js";
 import galleryRoutes from "./route/gallery.route.js";
 import commentRouter from "./route/comment.route.js";
 import OrderRouter from "./route/order.route.js";
+import postRoutes from "./route/post.route.js"
 dotenv.config();
 const app = express();
 
@@ -33,7 +34,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-app.use("/profile", express.static(path.join(path.resolve(), "public/profile")));
+// app.use("/profile", express.static(path.join(path.resolve(), "public/profile")));
+app.use("/profile", express.static("profile"));
 
 
 app.use("/user", UserRouter);
@@ -44,6 +46,8 @@ app.use("/gallery", galleryRoutes);
 // app.use('/comment',CommentRouter);
 app.use("/comment", commentRouter);
 app.use("/order",OrderRouter);
+// app.use("/post",postRoutes);
+app.use("/posts", postRoutes);
 
 mongoose
   .connect(process.env.DB_URL)

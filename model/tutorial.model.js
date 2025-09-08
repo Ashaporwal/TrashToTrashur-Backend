@@ -7,13 +7,15 @@ const tutorialSchema = new mongoose.Schema({
     filename: String,
     originalname: String
   },
+    likes: { type: Number, default: 0 },
   images: [
     {
       filename: String,
       originalname: String
     }
   ],
-  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 });
 
 export const Tutorial = mongoose.model("Tutorial", tutorialSchema);

@@ -11,9 +11,9 @@ dotenv.config();
 
 // import { validationResult } from "express-validator";
 
+
 export const createUser = async (req, res, next) => {
   try {
-    // 🟢 Validation check
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ error: "Bad request", errorMessages: errors.array() });
@@ -37,16 +37,65 @@ export const createUser = async (req, res, next) => {
       password: hashedPassword,
       contact,
       email: emailNormalized,
-      role
+      role,
+      isVerified: false
     });
 
     console.log("User created:", result.email);
-    return res.status(201).json({ message: "Successfully created" });
+
+    // ✅ Send verification email
+    try {
+      await sendEmail(emailNormalized, name);
+      console.log("Verification email sent to:", emailNormalized);
+    } catch (err) {
+      console.error("Error sending email:", err.message);
+    }
+
+    return res.status(201).json({ message: "User created successfully. Please verify your email." });
+
   } catch (error) {
     console.error("Signup error:", error);
     return res.status(500).json({ error: "Internal Server error" });
   }
 };
+
+// export const createUser = async (req, res, next) => {
+//   try {
+//     // 🟢 Validation check
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({ error: "Bad request", errorMessages: errors.array() });
+//     }
+
+//     const { name, email, contact, password, role } = req.body;
+//     console.log("Signup Body:", req.body);
+
+//     const emailNormalized = email.trim().toLowerCase();
+//     const existing = await User.findOne({ email: emailNormalized });
+
+//     if (existing) {
+//       return res.status(409).json({ error: "Email already registered" });
+//     }
+
+//     const salt = await bcrypt.genSalt(12);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+// const result = await User.create({
+//   name,
+//   password: hashedPassword,
+//   contact,
+//   email: emailNormalized,
+//   role
+// });
+
+// console.log("User created:", result.email);
+// return res.status(201).json({ message: "Successfully created" });
+//     // return res.status(201).json({ message: "Successfully created" });
+//   } catch (error) {
+//     console.error("Signup error:", error);
+//     return res.status(500).json({ error: "Internal Server error" });
+//   }
+// };
 
 
 
@@ -207,50 +256,32 @@ console.log("ID from params:", req.params.id);
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
+    let updateData = { ...req.body };
 
-    if (!id) {
-      return res.status(400).json({ message: "User ID is required" });
+    // Agar file upload hui hai
+    if (req.file) {
+      updateData.profilePicture = `/profile/${req.file.filename}`; // ✅ always save with /profile/
     }
 
-    const user = await User.findById(id);
-    if (!user) {
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+
+    if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Text fields
-    const { name, email, contact, password } = req.body;
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (contact) user.contact = contact;
-
-    // Password update
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-    }
-
-    // File update
-    if (req.file) {
-      user.profilePicture = `/profile/${req.file.filename}`;
-    }
-
-    await user.save();
-
-    res.status(200).json({
-      message: "User updated successfully",
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        contact: user.contact,
-        profilePicture: user.profilePicture,
-      },
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
     });
-  } catch (err) {
-    console.error("Update error:", err);
-    res.status(500).json({ message: "Internal server error" });
+  } catch (error) {
+    console.error("Update user error:", error);
+    res.status(500).json({ message: "Failed to update profile" });
   }
 };
+
 
 
 // export const updateUser = async (req, res) => {

@@ -9,14 +9,21 @@ export const createTutorial = async (req, res) => {
     const images = req.files.images ? req.files.images.map(f => ({ filename: f.filename, originalname: f.originalname })) : [];
     const video = req.files.video ? { filename: req.files.video[0].filename, originalname: req.files.video[0].originalname } : null;
 
-    const tutorial = new Tutorial({
-      title: req.body.title,
-      description: req.body.description,
-      images,
-      video,
-      uploadedBy: req.body.uploadedBy 
-    });
+    // const tutorial = new Tutorial({
+    //   title: req.body.title,
+    //   description: req.body.description,
+    //   images,
+    //   video,
+    //   uploadedBy: req.body.uploadedBy 
+    // });
 
+    const tutorial = new Tutorial({
+  title: req.body.title,
+  description: req.body.description,
+  images,
+  video,
+  uploadedBy: req.body.uploadedBy  // ✅ yaha userId aa raha hona chahiye
+});
     await tutorial.save();
     res.status(201).json({ message: "Tutorial created", tutorial });
   } catch (err) {
@@ -25,14 +32,32 @@ export const createTutorial = async (req, res) => {
   }
 };
 
+// export const getAllTutorials = async (req, res) => {
+//   try {
+//     const tutorials = await Tutorial.find().populate("uploadedBy", "name");
+//     res.status(200).json(tutorials);
+//   } catch (err) {
+//     res.status(500).json({ message: "Failed to fetch tutorials", error: err });
+//   }
+// };
+
 export const getAllTutorials = async (req, res) => {
   try {
+    const userId = req.query.userId; // 👈 frontend se bhejna
     const tutorials = await Tutorial.find().populate("uploadedBy", "name");
-    res.status(200).json(tutorials);
+
+    const formatted = tutorials.map(t => ({
+      ...t._doc,
+      likesCount: t.likedBy.length,
+      isLiked: userId ? t.likedBy.some(id => id.toString() === userId) : false
+    }));
+
+    res.status(200).json(formatted);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch tutorials", error: err });
   }
 };
+
 
 
 
@@ -88,14 +113,34 @@ export const deleteTutorial = async (req, res) => {
 export const getMyTutorials = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const tutorials = await Tutorial.find({ uploadedBy: userId });
+    const tutorials = await Tutorial.find({ uploadedBy: userId })
+      .populate("uploadedBy", "name"); 
+
     res.status(200).json({ success: true, tutorials });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
+// export const likeTutorial = async (req, res) => {
+//   try {
+//     const tutorial = await Tutorial.findById(req.params.id);
+//     if (!tutorial) return res.status(404).json({ message: "Tutorial not found" });
 
+//     const userId = req.body.userId;
+//     if (!userId) return res.status(400).json({ message: "User ID required" });
+
+//     const likedIndex = tutorial.likedBy.findIndex(id => id.toString() === userId);
+//     if (likedIndex === -1) tutorial.likedBy.push(userId); // like
+//     else tutorial.likedBy.splice(likedIndex, 1); // unlike
+
+//     await tutorial.save();
+//     res.json({ likesCount: tutorial.likedBy.length, likedBy: tutorial.likedBy });
+//   } catch (err) {
+//     console.error("Like error:", err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 
 
 
@@ -267,4 +312,40 @@ export const getMyTutorials = async (req, res) => {
 //     res.status(400).json({message:"err: err.message"});
 //   }
 // }
+
+export const likeTutorial = async (req, res) => {
+  try {
+    const tutorialId = req.params.id;
+    const userId = req.body.userId;
+
+    if (!tutorialId || !userId) {
+      return res.status(400).json({ message: "Tutorial ID and User ID required" });
+    }
+
+    const tutorial = await Tutorial.findById(tutorialId);
+    if (!tutorial) {
+      return res.status(404).json({ message: "Tutorial not found" });
+    }
+
+
+    const alreadyLiked = tutorial.likedBy.some(id => id.toString() === userId);
+    if (alreadyLiked) {
+      return res.status(400).json({ message: "You have already liked this tutorial" });
+    }
+
+    tutorial.likedBy.push(userId);
+    await tutorial.save();
+
+    res.json({
+      message: "Liked successfully",
+      likesCount: tutorial.likedBy.length,
+      isLiked: true
+    });
+  } catch (err) {
+    console.error("Like error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+
 
