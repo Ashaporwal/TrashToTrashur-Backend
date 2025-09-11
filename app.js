@@ -5,6 +5,11 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
+import passport from "passport";
+import session from "express-session";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
+
 
 import MaterialRouter from "./route/material.route.js";
 import UserRouter from "./route/user.route.js";
@@ -13,7 +18,11 @@ import TutorialRouter from "./route/tutorial.route.js";
 import galleryRoutes from "./route/gallery.route.js";
 import commentRouter from "./route/comment.route.js";
 import OrderRouter from "./route/order.route.js";
-import postRoutes from "./route/post.route.js"
+import postRoutes from "./route/post.route.js";
+import CartRoutes from './route/cart.route.js';
+
+
+
 dotenv.config();
 const app = express();
 
@@ -26,11 +35,29 @@ app.use(
   })
 );
 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "http://localhost:5000/auth/google/callback"
+}, (accessToken, refreshToken, profile, done) => {
+  return done(null, profile);
+}));
+
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 
-
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((obj, done) => done(null, obj));
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -48,6 +75,7 @@ app.use("/comment", commentRouter);
 app.use("/order",OrderRouter);
 // app.use("/post",postRoutes);
 app.use("/posts", postRoutes);
+app.use("/cart",CartRoutes);
 
 mongoose
   .connect(process.env.DB_URL)

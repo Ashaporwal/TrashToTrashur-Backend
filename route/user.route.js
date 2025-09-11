@@ -1,4 +1,6 @@
 import express from "express";
+import passport from "passport";
+
 import { body } from "express-validator";
 import {
   createUser,
@@ -39,13 +41,48 @@ router.post("/verify", verifyAccount);
 
 // Get users
 router.get("/getall", getAllUser);
-router.get("/:id", getById);
+
+// router.get("/:id", getById);
 
 // Update user profile with optional profile picture
 router.put("/update/:id", upload.single("profilePicture"), updateUser);
 
 // Logout
 router.delete("/", LogOut);
+
+
+// Google login
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+// Google callback
+// router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+router.get("/google/callback", 
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res) => {
+    res.redirect("http://localhost:5173/");
+  }
+);
+
+
+
+
+router.get("/current", (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json(req.user); // Google profile
+  } else {
+    res.status(401).json({ message: "Not logged in" });
+  }
+});
+
+router.get("/logout", (req, res) => {
+  req.logout(() => {
+    res.redirect("http://localhost:5173"); // frontend home
+  });
+});
+
+
+router.get("/:id", getById);
 
 export default router;
 

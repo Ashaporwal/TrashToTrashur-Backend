@@ -228,43 +228,127 @@ export const getAllUser = async (request, response, next) => {
 //     }
 // }
 
+
 export const getById = async (req, res) => {
   try {
     const { id } = req.params;
-console.log("ID from params:", req.params.id);
-
-    // DB se user fetch karo aur role bhi check karo
     const user = await User.findById(id);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (user.role !== "crafter") {
-      return res.status(403).json({ message: "Not a crafter" });
-    }
-
-    // Agar sab thik hai
-    return res.status(200).json({ crafter: user });
+    // Return full user object including cart
+    return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ err: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
 
+// export const getById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+// console.log("ID from params:", req.params.id);
+
+//     // DB se user fetch karo aur role bhi check karo
+//     const user = await User.findById(id);
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     if (user.role !== "crafter") {
+//       return res.status(403).json({ message: "Not a crafter" });
+//     }
+
+//     // Agar sab thik hai
+//     return res.status(200).json({ crafter: user });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ err: "Internal server error" });
+//   }
+// };
+
+
+// export const updateUser = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     let updateData = { ...req.body };
+
+//     // Agar file upload hui hai
+//     if (req.file) {
+//       updateData.profilePicture = `/profile/${req.file.filename}`;
+//     }
+
+//     const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+//       new: true,
+//     });
+
+//     if (!updatedUser) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     res.json({
+//       success: true,
+//       message: "Profile updated successfully",
+//       user: updatedUser,
+//     });
+//   } catch (error) {
+//     console.error("Update user error:", error);
+//     res.status(500).json({ message: "Failed to update profile" });
+//   }
+// };
+
+// export const updateUser = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     let updateData = { ...req.body };
+
+//     // 🔹 sanitize favorites agar aa raha hai
+//     if (updateData.favorites && Array.isArray(updateData.favorites)) {
+//       updateData.favorites = updateData.favorites.filter(
+//         (fav) => fav && fav.trim() !== ""
+//       );
+//     }
+
+//     // Agar file upload hui hai
+//     if (req.file) {
+//       updateData.profilePicture = `/profile/${req.file.filename}`;
+//     }
+// const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+//   new: true,
+//   runValidators: true,
+// });
+
+
+//     if (!updatedUser) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     res.json({
+//       success: true,
+//       message: "Profile updated successfully",
+//       user: updatedUser,
+//     });
+//   } catch (error) {
+//     console.error("Update user error:", error);
+//     res.status(500).json({ message: "Failed to update profile", error: error.message });
+//   }
+// };
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    let updateData = { ...req.body };
+    const updateData = { ...req.body };
 
-    // Agar file upload hui hai
+    // ✅ If profile picture uploaded, save path
     if (req.file) {
-      updateData.profilePicture = `/profile/${req.file.filename}`; // ✅ always save with /profile/
+      updateData.profilePicture = `/profile/${req.file.filename}`;
     }
 
+    // Update user in DB
     const updatedUser = await User.findByIdAndUpdate(id, updateData, {
       new: true,
+      runValidators: true,
     });
 
     if (!updatedUser) {
@@ -281,6 +365,20 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: "Failed to update profile" });
   }
 };
+
+// Add to Cart
+
+
+
+// Add to Favorites
+
+
+// GET /user/:userId/cart
+
+
+
+// PUT /user/:userId/cart/:itemId
+
 
 
 

@@ -42,7 +42,17 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  cart: [
+    {
+      materialId: { type: mongoose.Schema.Types.ObjectId, ref: "Material" },
+      quantity: Number,
+      color: String,
+      size: String
+    }
+  ],
+  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Material" }]
 }, { toJSON: { getters: true }, versionKey: false });
+
 
 export const User = mongoose.model("User", userSchema);
 
